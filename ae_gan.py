@@ -180,7 +180,7 @@ class VAEGAN(tf.keras.Sequential):
 
 def main():
     utils.mpl_init()
-    utils.add_dirs()
+    utils.add_dirs(MODEL_NAME)
 
     dataset = load_real_samples()
     d_model = architecture.discriminator()
