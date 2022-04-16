@@ -4,7 +4,7 @@ from tensorflow.keras.layers import (Conv2D, Conv2DTranspose, Dense, Dropout,
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam
 
-from ae_gan import LEARNING_RATE
+from config import LEARNING_RATE
 
 
 # AE VERSION 2, based almost entirely on discriminator / generator

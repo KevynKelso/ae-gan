@@ -9,9 +9,7 @@ from tensorflow.python.keras.engine import data_adapter
 
 import architecture
 import utils
-
-MODEL_NAME = "aegan_inverse1"
-LEARNING_RATE = 0.0001
+from config import LEARNING_RATE, MODEL_NAME
 
 utils.mpl_init()
 

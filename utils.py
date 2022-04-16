@@ -5,7 +5,7 @@ from os.path import isdir
 import matplotlib as mpl
 from matplotlib import pyplot as plt
 
-from ae_gan import MODEL_NAME
+from config import MODEL_NAME
 
 
 def add_dirs(model_name):
