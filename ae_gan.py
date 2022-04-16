@@ -1,15 +1,7 @@
-import os
-from os.path import isdir
-
 import numpy as np
 import tensorflow as tf
-import tensorflow.keras.backend as K
 from numpy import ones, zeros
 from numpy.random import randint
-from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.layers import (BatchNormalization, Conv2D,
-                                     Conv2DTranspose, Dense, Flatten, Input,
-                                     Lambda, LeakyReLU, Reshape)
 from tensorflow.keras.losses import BinaryCrossentropy, MeanSquaredError
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.optimizers import Adam
@@ -18,7 +10,7 @@ from tensorflow.python.keras.engine import data_adapter
 import architecture
 import utils
 
-MODEL_NAME = "aegan_a_1_b_0_1"
+MODEL_NAME = "aegan_inverse1"
 LEARNING_RATE = 0.0001
 
 utils.mpl_init()
@@ -138,7 +130,6 @@ def loss_wapper(g_model, alpha, beta):
     bce = BinaryCrossentropy()
 
     def loss(x, y_true, y_pred):
-        # TODO gan loss should be inversly proportional to ae loss
         # run data through generator
         y = g_model(x)
         # calculate typical loss functions
