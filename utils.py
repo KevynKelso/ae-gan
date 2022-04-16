@@ -3,6 +3,9 @@ import platform
 from os.path import isdir
 
 import matplotlib as mpl
+
+if platform.system() != "Darwin":
+    mpl.use("Agg")  # Disable the need for X window environment
 from matplotlib import pyplot as plt
 
 from config import MODEL_NAME
@@ -43,9 +46,3 @@ def save_plot(examples, epoch, n=10, filename="", show=False):
         plt.show()
     plt.savefig(filename)
     plt.close()
-
-
-def mpl_init():
-    if platform.system() == "Darwin":
-        return
-    mpl.use("Agg")  # Disable the need for X window environment

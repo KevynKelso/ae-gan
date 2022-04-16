@@ -11,8 +11,6 @@ import architecture
 import utils
 from config import LEARNING_RATE, MODEL_NAME
 
-utils.mpl_init()
-
 
 def load_real_samples():
     # load the face dataset
@@ -152,8 +150,8 @@ def loss_wapper(g_model, alpha, beta):
 
 
 class VAEGAN(tf.keras.Sequential):
-    def compile(self, optimizer, my_loss, run_eagerly=False):
-        super().compile(optimizer, run_eagerly=False)
+    def compile(self, optimizer, my_loss, run_eagerly=True):
+        super().compile(optimizer, run_eagerly=True)
         self.my_loss = my_loss
 
     def train_step(self, data):
