@@ -1,16 +1,9 @@
 import os
 from os.path import isdir
 
-import matplotlib as mpl
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as K
-
-import architecture
-import utils
-
-# TODO: make this os dependent
-mpl.use("Agg")  # Disable the need for X window environment
 from matplotlib import pyplot
 from numpy import ones, zeros
 from numpy.random import randint
@@ -23,7 +16,11 @@ from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.python.keras.engine import data_adapter
 
+import architecture
+import utils
+
 MODEL_NAME = "aegan_a_1_b_0_1"
+LEARNING_RATE = 0.0001
 
 
 def load_real_samples():
@@ -129,9 +126,8 @@ def define_gan(g_model, d_model):
     model.add(g_model)
     model.add(d_model)
     # compile model
-    # TODO: learning rate in discriminator needs to be consistent with this learning rate
-    opt = Adam(lr=0.0001, beta_1=0.5)
-    model.compile(my_loss=loss_wapper(g_model, 1, 0.01), optimizer=opt)
+    opt = Adam(lr=LEARNING_RATE, beta_1=0.5)
+    model.compile(my_loss=loss_wapper(g_model, 1, 0.0005), optimizer=opt)
 
     return model
 
@@ -142,14 +138,23 @@ def loss_wapper(g_model, alpha, beta):
 
     def loss(x, y_true, y_pred):
         # TODO gan loss should be inversly proportional to ae loss
+        # run data through generator
         y = g_model(x)
+        # calculate typical loss functions
         ae = mse(x, y)
         gan = bce(y_true, y_pred)
+
+        # scale ae loss and invert
         ae_loss = tf.math.scalar_mul(alpha, ae)
-        gan_loss = tf.math.scalar_mul(beta, gan)
+        ae_loss_inverted = tf.math.divide_no_nan(1, ae_loss)
+
         # gan_loss should = gan_loss * 0.0005 * (1/ae_loss) Hopefully that will allow recovery from convergence failure
+        gan_loss_scaled = tf.math.scalar_mul(beta, gan)
+        gan_loss = tf.math.multiply(gan_loss_scaled, ae_loss_inverted)
+        # record results for analysis
         with open(f"./{MODEL_NAME}/data/alpha_beta_loss_{MODEL_NAME}.csv", "a") as f:
             f.write(f"{ae},{gan}\n")
+
         return ae_loss + gan_loss
 
     return loss
@@ -174,6 +179,7 @@ class VAEGAN(tf.keras.Sequential):
 
 
 def main():
+    utils.mpl_init()
     utils.add_dirs()
 
     dataset = load_real_samples()

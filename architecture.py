@@ -4,6 +4,8 @@ from tensorflow.keras.layers import (Conv2D, Conv2DTranspose, Dense, Dropout,
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam
 
+from ae_gan import LEARNING_RATE
+
 
 # AE VERSION 2, based almost entirely on discriminator / generator
 def ae(in_shape=(80, 80, 3)):
@@ -72,6 +74,6 @@ def discriminator(in_shape=(80, 80, 3)):
     model.add(Dropout(0.4))
     model.add(Dense(1, activation="sigmoid"))
     # compile model
-    opt = Adam(lr=0.0002, beta_1=0.5)
+    opt = Adam(lr=LEARNING_RATE, beta_1=0.5)
     model.compile(loss="binary_crossentropy", optimizer=opt, metrics=["accuracy"])
     return model

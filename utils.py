@@ -1,18 +1,26 @@
 import os
+import platform
 from os.path import isdir
 
+import matplotlib as mpl
 from matplotlib import pyplot as plt
 
 
 def add_dirs(model_name):
     if not isdir(f"./{model_name}"):
         os.system(f"mkdir {model_name}")
+        # data dir
         if not isdir(f"./{model_name}/data"):
             os.system(f"mkdir {model_name}/data")
+        # images dir
         if not isdir(f"./{model_name}/images"):
             os.system(f"mkdir {model_name}/images")
+        # models dir
         if not isdir(f"./{model_name}/models"):
             os.system(f"mkdir {model_name}/models")
+        # results dir
+        if not isdir(f"./{model_name}/results"):
+            os.system(f"mkdir {model_name}/results")
 
 
 def save_plot(model_name, examples, epoch, n=10, filename="", show=False):
@@ -33,3 +41,9 @@ def save_plot(model_name, examples, epoch, n=10, filename="", show=False):
         plt.show()
     plt.savefig(filename)
     plt.close()
+
+
+def mpl_init():
+    if platform.system() == "Darwin":
+        return
+    mpl.use("Agg")  # Disable the need for X window environment
