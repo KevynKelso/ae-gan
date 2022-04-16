@@ -5,6 +5,8 @@ from os.path import isdir
 import matplotlib as mpl
 from matplotlib import pyplot as plt
 
+from ae_gan import MODEL_NAME
+
 
 def add_dirs(model_name):
     if not isdir(f"./{model_name}"):
@@ -23,7 +25,7 @@ def add_dirs(model_name):
             os.system(f"mkdir {model_name}/results")
 
 
-def save_plot(model_name, examples, epoch, n=10, filename="", show=False):
+def save_plot(examples, epoch, n=10, filename="", show=False):
     # scale from [-1,1] to [0,1]
     examples = (examples + 1) / 2.0
     # plot images
@@ -36,7 +38,7 @@ def save_plot(model_name, examples, epoch, n=10, filename="", show=False):
         plt.imshow(examples[i])
     # save plot to file
     if filename == "":
-        filename = f"./{model_name}/images/generated_plot_e{epoch+1}.png"
+        filename = f"./{MODEL_NAME}/images/generated_plot_e{epoch+1}.png"
     if show:
         plt.show()
     plt.savefig(filename)

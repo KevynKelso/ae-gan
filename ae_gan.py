@@ -4,7 +4,6 @@ from os.path import isdir
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as K
-from matplotlib import pyplot
 from numpy import ones, zeros
 from numpy.random import randint
 from tensorflow.keras.callbacks import EarlyStopping
@@ -148,7 +147,8 @@ def loss_wapper(g_model, alpha, beta):
 
         # scale ae loss and invert
         ae_loss = tf.math.scalar_mul(alpha, ae)
-        ae_loss_inverted = tf.math.divide_no_nan(1.0, ae_loss)
+        ae_loss_inverted = 1 / ae_loss
+        # ae_loss_inverted = tf.math.divide_no_nan(1.0, ae_loss)
 
         # gan_loss should = gan_loss * 0.0005 * (1/ae_loss) Hopefully that will allow recovery from convergence failure
         gan_loss_scaled = tf.math.scalar_mul(beta, gan)
