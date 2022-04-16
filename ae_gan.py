@@ -22,6 +22,8 @@ import utils
 MODEL_NAME = "aegan_a_1_b_0_1"
 LEARNING_RATE = 0.0001
 
+utils.mpl_init()
+
 
 def load_real_samples():
     # load the face dataset
@@ -126,7 +128,7 @@ def define_gan(g_model, d_model):
     model.add(g_model)
     model.add(d_model)
     # compile model
-    opt = Adam(lr=LEARNING_RATE, beta_1=0.5)
+    opt = Adam(learning_rate=LEARNING_RATE, beta_1=0.5)
     model.compile(my_loss=loss_wapper(g_model, 1, 0.0005), optimizer=opt)
 
     return model
@@ -146,7 +148,7 @@ def loss_wapper(g_model, alpha, beta):
 
         # scale ae loss and invert
         ae_loss = tf.math.scalar_mul(alpha, ae)
-        ae_loss_inverted = tf.math.divide_no_nan(1, ae_loss)
+        ae_loss_inverted = tf.math.divide_no_nan(1.0, ae_loss)
 
         # gan_loss should = gan_loss * 0.0005 * (1/ae_loss) Hopefully that will allow recovery from convergence failure
         gan_loss_scaled = tf.math.scalar_mul(beta, gan)
@@ -179,7 +181,6 @@ class VAEGAN(tf.keras.Sequential):
 
 
 def main():
-    utils.mpl_init()
     utils.add_dirs(MODEL_NAME)
 
     dataset = load_real_samples()

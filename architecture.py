@@ -74,6 +74,6 @@ def discriminator(in_shape=(80, 80, 3)):
     model.add(Dropout(0.4))
     model.add(Dense(1, activation="sigmoid"))
     # compile model
-    opt = Adam(lr=LEARNING_RATE, beta_1=0.5)
+    opt = Adam(learning_rate=LEARNING_RATE, beta_1=0.5)
     model.compile(loss="binary_crossentropy", optimizer=opt, metrics=["accuracy"])
     return model
