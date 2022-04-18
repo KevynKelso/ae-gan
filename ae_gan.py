@@ -10,6 +10,8 @@ import architecture
 import utils
 from config import LEARNING_RATE, MODEL_NAME
 
+# TODO: add csv headers automatically
+
 
 def load_real_samples():
     # load the face dataset
@@ -115,7 +117,8 @@ def define_gan(g_model, d_model):
     model.add(d_model)
     # compile model
     opt = Adam(learning_rate=LEARNING_RATE, beta_1=0.5)
-    model.compile(my_loss=loss_wapper(g_model, 1, 1), optimizer=opt)
+    # TODO: scalar should increase with lower reconstruction loss
+    model.compile(my_loss=loss_wapper(g_model, 1, 0.005), optimizer=opt)
 
     return model
 
