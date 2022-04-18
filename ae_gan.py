@@ -3,7 +3,6 @@ import tensorflow as tf
 from numpy import ones, zeros
 from numpy.random import randint
 from tensorflow.keras.losses import BinaryCrossentropy, MeanSquaredError
-from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.python.keras.engine import data_adapter
 
@@ -69,7 +68,6 @@ def generate_fake_samples(vae_model, n_samples, dataset):
 
 
 def train(ae_model, d_model, gan_model, dataset, n_epochs=100, n_batch=256):
-    # def train(ae_model, d_model, gan_model, dataset, n_epochs=100, n_batch=13):
     bat_per_epo = int(dataset.shape[0] / n_batch)
     half_batch = int(n_batch / 2)
     # manually enumerate epochs
@@ -92,10 +90,11 @@ def train(ae_model, d_model, gan_model, dataset, n_epochs=100, n_batch=256):
             # update the generator via the discriminator's error
             g_loss = gan_model.train_on_batch(X_gan, y_gan, return_dict=True)
             g_loss = g_loss["loss"]
+            # TODO: accuracy should be evaluated on evey batch
             # summarize loss on this batch
-            print(
-                f">{i+1}, {j+1}/{bat_per_epo}, d_loss_real={d_loss_real:.3f}, d_loss_fake={d_loss_fake:.3f}, g={g_loss:.3f}"
-            )
+            # print(
+            # f">{i+1}, {j+1}/{bat_per_epo}, d_loss_real={d_loss_real:.3f}, d_loss_fake={d_loss_fake:.3f}, g={g_loss:.3f}"
+            # )
             # epoch, batch, d_loss_real, d_loss_fake, g_loss
             general_metrics = f"{i+1},{j+1},{d_loss_real},{d_loss_fake},{g_loss}\n"
             with open(
@@ -103,8 +102,8 @@ def train(ae_model, d_model, gan_model, dataset, n_epochs=100, n_batch=256):
             ) as f:
                 f.write(general_metrics)
         # evaluate the model performance, sometimes
-        # if (i + 1) % 10 == 0:
-        summarize_performance(i, ae_model, d_model, dataset)
+        if (i + 1) % 10 == 0:
+            summarize_performance(i, ae_model, d_model, dataset)
 
 
 def define_gan(g_model, d_model):
@@ -116,7 +115,7 @@ def define_gan(g_model, d_model):
     model.add(d_model)
     # compile model
     opt = Adam(learning_rate=LEARNING_RATE, beta_1=0.5)
-    model.compile(my_loss=loss_wapper(g_model, 1, 0.0005), optimizer=opt)
+    model.compile(my_loss=loss_wapper(g_model, 1, 1), optimizer=opt)
 
     return model
 

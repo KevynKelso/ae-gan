@@ -21,6 +21,7 @@ def test_model(epoch):
     print(f"Loaded model: {mname}")
     generator_model = load_model(mname)
     y = generator_model(dataset)
+    # TODO: get average blur dataset, and y
     save_plot(y, 0, n=3, filename=f"{MODEL_NAME}_e{epoch}_output.png", show=True)
 
 
@@ -64,7 +65,7 @@ def plot_discriminator_accuracy():
 
 
 def main():
-    # test_model(23)
+    test_model(100)
     plot_losses()
     plot_discriminator_accuracy()
 
