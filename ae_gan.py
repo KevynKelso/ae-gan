@@ -144,7 +144,7 @@ def loss_wapper(g_model, alpha):
         with open(f"./{MODEL_NAME}/data/alpha_beta_loss_{MODEL_NAME}.csv", "a") as f:
             f.write(f"{ae},{gan},{beta}\n")
 
-        return ae_loss + gan_loss_scaled
+        return ae + gan_loss_scaled
 
     return loss
 
