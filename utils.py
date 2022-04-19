@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt
 from config import MODEL_NAME
 
 
-def add_dirs(MODEL_NAME):
+def add_dirs():
     if not isdir(f"./{MODEL_NAME}"):
         os.system(f"mkdir {MODEL_NAME}")
         # data dir
