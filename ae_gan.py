@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 from numpy import ones, zeros
 from numpy.random import randint
@@ -83,9 +84,9 @@ def train(ae_model, d_model, gan_model, dataset, n_epochs=100, n_batch=256):
             g_loss = g_loss["loss"]
             # TODO: accuracy should be evaluated on evey batch
             # summarize loss on this batch
-            # print(
-            # f">{i+1}, {j+1}/{bat_per_epo}, d_loss_real={d_loss_real:.3f}, d_loss_fake={d_loss_fake:.3f}, g={g_loss:.3f}"
-            # )
+            print(
+                f">{i+1}, {j+1}/{bat_per_epo}, d_loss_real={d_loss_real:.3f}, d_loss_fake={d_loss_fake:.3f}, g={g_loss:.3f}"
+            )
             # epoch, batch, d_loss_real, d_loss_fake, g_loss
             general_metrics = f"{i+1},{j+1},{d_loss_real},{d_loss_fake},{g_loss}\n"
             with open(
@@ -93,8 +94,8 @@ def train(ae_model, d_model, gan_model, dataset, n_epochs=100, n_batch=256):
             ) as f:
                 f.write(general_metrics)
         # evaluate the model performance, sometimes
-        if (i + 1) % 10 == 0:
-            summarize_performance(i, ae_model, d_model, dataset)
+        # if (i + 1) % 10 == 0:
+        summarize_performance(i, ae_model, d_model, dataset)
 
 
 def define_gan(g_model, d_model):
