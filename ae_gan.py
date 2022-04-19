@@ -135,7 +135,7 @@ def loss_wapper(g_model, alpha):
             ].index.to_series().diff(periods=50)
             beta_vec = abs(-0.0000002 / derivative)
             beta_vec = beta_vec.apply(lambda x: min(x, 1)).fillna(0)
-            beta = beta_vec[-1]
+            beta = beta_vec.iloc[-1]
 
         # gan_loss should = gan_loss * 0.0005 * (1/ae_loss) Hopefully that will allow recovery from convergence failure
         gan_loss_scaled = tf.math.scalar_mul(beta, gan)
