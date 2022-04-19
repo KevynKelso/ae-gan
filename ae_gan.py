@@ -13,17 +13,6 @@ from config import LEARNING_RATE, MODEL_NAME
 # TODO: add csv headers automatically
 
 
-def load_real_samples():
-    # load the face dataset
-    data = np.load("img_align_celeba.npz")
-    X = data["arr_0"]
-    # convert from unsigned ints to floats
-    X = X.astype("float32")
-    # scale from [0,255] to [-1,1]
-    X = (X - 127.5) / 127.5
-    return X
-
-
 def generate_real_samples(dataset, n_samples):
     # choose random instances
     ix = randint(0, dataset.shape[0], n_samples)
@@ -118,12 +107,12 @@ def define_gan(g_model, d_model):
     # compile model
     opt = Adam(learning_rate=LEARNING_RATE, beta_1=0.5)
     # TODO: scalar should increase with lower reconstruction loss
-    model.compile(my_loss=loss_wapper(g_model, 1, 0.005), optimizer=opt)
+    model.compile(my_loss=loss_wapper(g_model, 1), optimizer=opt)
 
     return model
 
 
-def loss_wapper(g_model, alpha, beta):
+def loss_wapper(g_model, alpha):
     mse = MeanSquaredError()
     bce = BinaryCrossentropy()
 
@@ -135,18 +124,26 @@ def loss_wapper(g_model, alpha, beta):
         gan = bce(y_true, y_pred)
 
         # scale ae loss and invert
-        ae_loss = tf.math.scalar_mul(alpha, ae)
-        ae_loss_inverted = 1 / ae_loss
-        # ae_loss_inverted = tf.math.divide_no_nan(1.0, ae_loss)
+        # ae_loss = tf.math.scalar_mul(alpha, ae)
+        # ae_loss_inverted = 1 / ae_loss
+        df = pd.read_csv(f"./{MODEL_NAME}/data/alpha_beta_loss_{MODEL_NAME}.csv")
+        beta = 0
+        if len(df.index) > 50:
+            derivative = df["ae_loss"].diff(periods=50) / df[
+                "ae_loss"
+            ].index.to_series().diff(periods=50)
+            beta_vec = abs(-0.0000002 / derivative)
+            beta_vec = beta.apply(lambda x: min(x, 1)).fillna(0)
+            beta = beta_vec[-1]
 
         # gan_loss should = gan_loss * 0.0005 * (1/ae_loss) Hopefully that will allow recovery from convergence failure
         gan_loss_scaled = tf.math.scalar_mul(beta, gan)
-        gan_loss = tf.math.multiply(gan_loss_scaled, ae_loss_inverted)
+        # gan_loss = tf.math.multiply(gan_loss_scaled, ae_loss_inverted)
         # record results for analysis
         with open(f"./{MODEL_NAME}/data/alpha_beta_loss_{MODEL_NAME}.csv", "a") as f:
-            f.write(f"{ae},{gan}\n")
+            f.write(f"{ae},{gan},{beta}\n")
 
-        return ae_loss + gan_loss
+        return ae_loss + gan_loss_scaled
 
     return loss
 
@@ -170,9 +167,10 @@ class VAEGAN(tf.keras.Sequential):
 
 
 def main():
-    utils.add_dirs(MODEL_NAME)
+    utils.add_dirs()
+    utils.add_csv_headers()
 
-    dataset = load_real_samples()
+    dataset = utils.load_real_samples()
     d_model = architecture.discriminator()
     ae_model = architecture.ae()  # AE model is generator
 

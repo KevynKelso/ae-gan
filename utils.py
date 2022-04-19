@@ -14,21 +14,30 @@ from matplotlib import pyplot as plt
 from config import MODEL_NAME
 
 
-def add_dirs(model_name):
-    if not isdir(f"./{model_name}"):
-        os.system(f"mkdir {model_name}")
+def add_dirs(MODEL_NAME):
+    if not isdir(f"./{MODEL_NAME}"):
+        os.system(f"mkdir {MODEL_NAME}")
         # data dir
-        if not isdir(f"./{model_name}/data"):
-            os.system(f"mkdir {model_name}/data")
+        if not isdir(f"./{MODEL_NAME}/data"):
+            os.system(f"mkdir {MODEL_NAME}/data")
         # images dir
-        if not isdir(f"./{model_name}/images"):
-            os.system(f"mkdir {model_name}/images")
+        if not isdir(f"./{MODEL_NAME}/images"):
+            os.system(f"mkdir {MODEL_NAME}/images")
         # models dir
-        if not isdir(f"./{model_name}/models"):
-            os.system(f"mkdir {model_name}/models")
+        if not isdir(f"./{MODEL_NAME}/models"):
+            os.system(f"mkdir {MODEL_NAME}/models")
         # results dir
-        if not isdir(f"./{model_name}/results"):
-            os.system(f"mkdir {model_name}/results")
+        if not isdir(f"./{MODEL_NAME}/results"):
+            os.system(f"mkdir {MODEL_NAME}/results")
+
+
+def add_csv_headers():
+    with open(f"./{MODEL_NAME}/data/alpha_beta_loss_{MODEL_NAME}.csv", "w") as f:
+        f.write("ae_loss,gan_loss,beta")
+    with open(f"./{MODEL_NAME}/data/general_metrics_{MODEL_NAME}.csv", "w") as f:
+        f.write("epoch,batch,d_loss_real,d_loss_fake,g_loss")
+    with open(f"./{MODEL_NAME}/data/accuracy_metrics_{MODEL_NAME}.csv", "w") as f:
+        f.write("acc_real,acc_fake")
 
 
 def save_plot(examples, epoch, n=10, filename="", show=False):
@@ -68,3 +77,14 @@ def get_average_blur(imgs):
         summation += get_blur_factor(img_pil)
 
     return summation / len(imgs)
+
+
+def load_real_samples():
+    # load the face dataset
+    data = np.load("img_align_celeba.npz")
+    X = data["arr_0"]
+    # convert from unsigned ints to floats
+    X = X.astype("float32")
+    # scale from [0,255] to [-1,1]
+    X = (X - 127.5) / 127.5
+    return X

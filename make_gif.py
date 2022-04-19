@@ -8,7 +8,9 @@ from PIL import Image, ImageDraw
 # from tensorflow.keras.models import load_model
 from tqdm import tqdm
 
-# from vae_gan import load_real_samples, save_plot
+import utils
+
+# from vae_gan import save_plot
 
 MODEL_NAME = "aegan_inverse1"
 
@@ -22,7 +24,7 @@ def check_dir():
 
 def main():
     check_dir()
-    # dataset = load_real_samples()
+    # dataset = utils.load_real_samples()
     # mfiles = glob(f"./{MODEL_NAME}/models/generators/*generator*.h5")
     # mfiles.sort(key=lambda f: int(re.sub("\D", "", f)))
     # for i, f in enumerate(mfiles):
