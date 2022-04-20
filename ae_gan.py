@@ -124,27 +124,13 @@ def loss_wapper(g_model, alpha):
         ae = mse(x, y)
         gan = bce(y_true, y_pred)
 
-        # scale ae loss and invert
-        # ae_loss = tf.math.scalar_mul(alpha, ae)
-        # ae_loss_inverted = 1 / ae_loss
-        df = pd.read_csv(f"./{MODEL_NAME}/data/alpha_beta_loss_{MODEL_NAME}.csv")
-        beta = 0
-        if len(df.index) > 50:
-            derivative = df["ae_loss"].diff(periods=50) / df[
-                "ae_loss"
-            ].index.to_series().diff(periods=50)
-            beta_vec = abs(-0.0000002 / derivative)
-            beta_vec = beta_vec.apply(lambda x: min(x, 0.01)).fillna(0)
-            beta = beta_vec.iloc[-1]
+        gan_ceil = min(ae, gan)
 
-        # gan_loss should = gan_loss * 0.0005 * (1/ae_loss) Hopefully that will allow recovery from convergence failure
-        gan_loss_scaled = tf.math.scalar_mul(beta, gan)
-        # gan_loss = tf.math.multiply(gan_loss_scaled, ae_loss_inverted)
         # record results for analysis
         with open(f"./{MODEL_NAME}/data/alpha_beta_loss_{MODEL_NAME}.csv", "a") as f:
-            f.write(f"{ae},{gan},{beta}\n")
+            f.write(f"{ae},{gan}\n")
 
-        return ae + gan_loss_scaled
+        return ae + gan_ceil
 
     return loss
 

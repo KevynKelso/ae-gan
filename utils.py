@@ -33,7 +33,7 @@ def add_dirs():
 
 def add_csv_headers():
     with open(f"./{MODEL_NAME}/data/alpha_beta_loss_{MODEL_NAME}.csv", "w") as f:
-        f.write("ae_loss,gan_loss,beta")
+        f.write("ae_loss,gan_loss")
     with open(f"./{MODEL_NAME}/data/general_metrics_{MODEL_NAME}.csv", "w") as f:
         f.write("epoch,batch,d_loss_real,d_loss_fake,g_loss")
     with open(f"./{MODEL_NAME}/data/accuracy_metrics_{MODEL_NAME}.csv", "w") as f:

@@ -8,7 +8,7 @@ from utils import get_average_blur, load_real_samples, save_plot
 
 # fzf = FzfPrompt()
 
-MODEL_NAME = "aegan_inverse1"
+MODEL_NAME = "aegan_inverse4"
 BATCHES_PER_EPOCH = 195
 
 
@@ -33,29 +33,26 @@ def plot_losses():
     plt.title("")
     plt.xlabel("Epoch")
     plt.ylabel("loss")
-    # print(f"max = {max(df2['ae_loss'])}")
-    # print(f"min = {min(df2['ae_loss'])}")
+    print(f"max = {max(df2['ae_loss'])}")
+    print(f"min = {min(df2['ae_loss'])}")
     epoch = df2.index / BATCHES_PER_EPOCH
     # need derivative of the ae_loss
-    derivative = df2["ae_loss"].diff(periods=50) / df2[
-        "ae_loss"
-    ].index.to_series().diff(periods=50)
-    # plt.plot(epoch, derivative, label="derivative")
+    # derivative = df2["ae_loss"].diff(periods=50) / df2[
+    # "ae_loss"
+    # ].index.to_series().diff(periods=50)
 
-    # beta = abs(-0.00000002 / derivative)
-    beta = abs(-0.0000002 / derivative)
-    beta = beta.apply(lambda x: min(x, 1)).fillna(0)
+    # beta = abs(-0.0000002 / derivative)
+    # beta = beta.apply(lambda x: min(x, 1)).fillna(0)
     # plt.plot(epoch, beta, label="beta")
     # plt.legend()
     # print(beta)
     # plt.show()
     plt.plot(epoch, df2["ae_loss"], label="Reconstruction Loss")
     plt.plot(epoch, df2["gan_loss"], label="GAN loss orig")
-    plt.plot(epoch, df2["gan_loss"] * .0005, label="GAN loss effective")
-    plt.plot(epoch, df2["gan_loss"] * beta, label="GAN loss scaled")
+    # plt.plot(epoch, df2["gan_loss"] * .0005, label="GAN loss effective")
+    # plt.plot(epoch, df2["gan_loss"] * beta, label="GAN loss scaled")
     plt.legend()
     plt.show()
-    return
     plt.savefig(f"./{MODEL_NAME}/results/ae_loss_generator.png")
 
     plt.clf()
@@ -83,9 +80,9 @@ def plot_discriminator_accuracy():
 
 
 def main():
-    # test_model(100)
+    test_model(100)
     plot_losses()
-    # plot_discriminator_accuracy()
+    plot_discriminator_accuracy()
 
 
 if __name__ == "__main__":
