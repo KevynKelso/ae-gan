@@ -23,6 +23,8 @@ def add_dirs():
         # images dir
         if not isdir(f"./{MODEL_NAME}/images"):
             os.system(f"mkdir {MODEL_NAME}/images")
+            os.system(f"mkdir {MODEL_NAME}/images/training")
+            os.system(f"mkdir {MODEL_NAME}/images/validation")
         # models dir
         if not isdir(f"./{MODEL_NAME}/models"):
             os.system(f"mkdir {MODEL_NAME}/models")
@@ -53,10 +55,10 @@ def save_plot(examples, epoch, n=10, filename="", show=False):
         plt.imshow(examples[i])
     # save plot to file
     if filename == "":
-        filename = f"./{MODEL_NAME}/images/generated_plot_e{epoch+1}.png"
+        filename = f"./{MODEL_NAME}/images/training/generated_plot_e{epoch+1}.png"
+    plt.savefig(filename)
     if show:
         plt.show()
-    plt.savefig(filename)
     plt.close()
 
 
@@ -79,9 +81,9 @@ def get_average_blur(imgs):
     return summation / len(imgs)
 
 
-def load_real_samples():
+def load_real_samples(filename="img_align_celeba.npz"):
     # load the face dataset
-    data = np.load("img_align_celeba.npz")
+    data = np.load(filename)
     X = data["arr_0"]
     # convert from unsigned ints to floats
     X = X.astype("float32")

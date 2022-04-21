@@ -135,9 +135,10 @@ list_landmarks_align_celeba.csv
 rsync-receiver/*
 rsync-reciever/*
 models/*
-*.npz
+aegan_inverse**
 *.png
 *.csv
 *.h5
+*.gif
 
 .DS_Store

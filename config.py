@@ -1,4 +1,4 @@
-MODEL_NAME = "aegan_inverse5"
+MODEL_NAME = "baseline"
 LEARNING_RATE = 0.0001
 
 # Key
@@ -6,3 +6,4 @@ LEARNING_RATE = 0.0001
 # aegan_inverse2 = beta scalar = 1, batch size = 256. -- Failed to converge. All images were red
 # aegan_inverse3 = beta scalar = 0.005, batch size = 256 -- Not great results
 # aegan_inverse4 = beta scalar = auto (derivative), batch size = 256 -- Much more gan is present than in inverse1
+# baseline = beta scalar = 0, batch size = 256

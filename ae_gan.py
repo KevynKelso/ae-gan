@@ -11,7 +11,7 @@ import architecture
 import utils
 from config import LEARNING_RATE, MODEL_NAME
 
-# TODO: add csv headers automatically
+# TODO: reduce complexity on the discriminator. Seems to have some sort of convergence failure after 22 epochs or so
 
 
 def generate_real_samples(dataset, n_samples):
@@ -22,6 +22,31 @@ def generate_real_samples(dataset, n_samples):
     # generate 'real' class labels (1)
     y = ones((n_samples, 1))
     return X, y
+
+
+def evaluate_accuracy_metrics(g_model, d_model, dataset, n_samples=100):
+    # prepare real samples
+    X_real, y_real = generate_real_samples(dataset, n_samples)
+    # evaluate discriminator on real examples
+    _, acc_real = d_model.evaluate(X_real, y_real, verbose=0)
+    # prepare fake examples
+    x_fake, y_fake = generate_fake_samples(g_model, n_samples, dataset)
+    # evaluate discriminator on fake examples
+    _, acc_fake = d_model.evaluate(x_fake, y_fake, verbose=0)
+    # summarize discriminator performance
+    with open(f"./{MODEL_NAME}/data/accuracy_metrics_{MODEL_NAME}.csv", "a") as f:
+        f.write(f"{acc_real},{acc_fake}\n")
+
+
+def summarize_validation(epoch, g_model, d_model, dataset_validation, n_samples=9):
+    # prepare fake examples
+    x_fake, y_fake = generate_fake_samples(g_model, n_samples, dataset_validation)
+    utils.save_plot(
+        x_fake,
+        epoch,
+        n=3,
+        filename=f"./{MODEL_NAME}/images/validation/{MODEL_NAME}_e{epoch}.png",
+    )
 
 
 def summarize_performance(epoch, g_model, d_model, dataset, n_samples=100):
@@ -42,8 +67,8 @@ def summarize_performance(epoch, g_model, d_model, dataset, n_samples=100):
     # save the generator model tile file
     filename = f"./{MODEL_NAME}/models/generator_model_{MODEL_NAME}_{epoch+1}.h5"
     g_model.save(filename)
-    filename = f"./{MODEL_NAME}/models/discriminator_model_{MODEL_NAME}_{epoch+1}.h5"
-    d_model.save(filename)
+    # filename = f"./{MODEL_NAME}/models/discriminator_model_{MODEL_NAME}_{epoch+1}.h5"
+    # d_model.save(filename)
 
 
 def generate_fake_samples(vae_model, n_samples, dataset):
@@ -59,7 +84,9 @@ def generate_fake_samples(vae_model, n_samples, dataset):
     return X, y
 
 
-def train(ae_model, d_model, gan_model, dataset, n_epochs=100, n_batch=256):
+def train(
+    ae_model, d_model, gan_model, dataset, dataset_validation, n_epochs=100, n_batch=256
+):
     bat_per_epo = int(dataset.shape[0] / n_batch)
     half_batch = int(n_batch / 2)
     # manually enumerate epochs
@@ -82,20 +109,20 @@ def train(ae_model, d_model, gan_model, dataset, n_epochs=100, n_batch=256):
             # update the generator via the discriminator's error
             g_loss = gan_model.train_on_batch(X_gan, y_gan, return_dict=True)
             g_loss = g_loss["loss"]
-            # TODO: accuracy should be evaluated on evey batch
+
+            # evaluate_accuracy_metrics(ae_model, d_model, dataset)
             # summarize loss on this batch
-            print(
-                f">{i+1}, {j+1}/{bat_per_epo}, d_loss_real={d_loss_real:.3f}, d_loss_fake={d_loss_fake:.3f}, g={g_loss:.3f}"
-            )
             # epoch, batch, d_loss_real, d_loss_fake, g_loss
             general_metrics = f"{i+1},{j+1},{d_loss_real},{d_loss_fake},{g_loss}\n"
             with open(
                 f"./{MODEL_NAME}/data/general_metrics_{MODEL_NAME}.csv", "a"
             ) as f:
                 f.write(general_metrics)
+
+        summarize_validation(i, ae_model, d_model, dataset_validation)
         # evaluate the model performance, sometimes
-        # if (i + 1) % 10 == 0:
-        summarize_performance(i, ae_model, d_model, dataset)
+        if (i + 1) % 5 == 0:
+            summarize_performance(i, ae_model, d_model, dataset)
 
 
 def define_gan(g_model, d_model):
@@ -130,7 +157,7 @@ def loss_wapper(g_model, alpha):
         with open(f"./{MODEL_NAME}/data/alpha_beta_loss_{MODEL_NAME}.csv", "a") as f:
             f.write(f"{ae},{gan}\n")
 
-        return ae + gan_ceil
+        return ae
 
     return loss
 
@@ -158,12 +185,13 @@ def main():
     utils.add_csv_headers()
 
     dataset = utils.load_real_samples()
+    dataset_validation = utils.load_real_samples("./validation_img_align_celeba.npz")
     d_model = architecture.discriminator()
     ae_model = architecture.ae()  # AE model is generator
 
     gan_model = define_gan(ae_model, d_model)
 
-    train(ae_model, d_model, gan_model, dataset)
+    train(ae_model, d_model, gan_model, dataset, dataset_validation)
 
 
 if __name__ == "__main__":
