@@ -1,23 +1,66 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
-from tensorflow.keras.models import load_model
+from tensorflow.keras.models import Model, load_model
 
-from utils import get_average_blur, load_real_samples, save_plot
+from utils import (fatal_check_is_file, get_average_blur, load_real_samples,
+                   save_plot, split_ae_generator_v2)
 
 # from pyfzf.pyfzf import FzfPrompt
 
 # fzf = FzfPrompt()
 
-MODEL_NAME = "aegan_inverse1"
+MODEL_NAME = "aegan_inverse5"
 BATCHES_PER_EPOCH = 195
+BATCHES_TO_PLOT = 19500
+
+
+def vector_arithmetic(epoch):
+    mname = f"./{MODEL_NAME}/models/generator_model_{MODEL_NAME}_{epoch}.h5"
+    fatal_check_is_file(mname)
+    generator_model = load_model(mname)
+    print(f"Loaded model: {mname}")
+
+    encoder, decoder = split_ae_generator_v2(generator_model)
+    dataset = load_real_samples("img_align_celeba2.npz")
+
+    smiling_women = np.asarray([dataset[3], dataset[5], dataset[9]])
+    neutral_women = np.asarray([dataset[0], dataset[4], dataset[10]])
+    neutral_men = np.asarray([dataset[6], dataset[8], dataset[28]])
+
+    avg_smiling_women_lv = np.mean(encoder.predict(smiling_women), axis=0)
+    avg_neutral_women_lv = np.mean(encoder.predict(neutral_women), axis=0)
+    avg_neutral_men_lv = np.mean(encoder.predict(neutral_men), axis=0)
+
+    avg_smiling_women = decoder.predict(np.asarray([avg_smiling_women_lv]))[0]
+    avg_neutral_women = decoder.predict(np.asarray([avg_neutral_women_lv]))[0]
+    avg_neutral_men = decoder.predict(np.asarray([avg_neutral_men_lv]))[0]
+
+    combined_vector = avg_smiling_women_lv - avg_neutral_women_lv + avg_neutral_men_lv
+    prediction = decoder.predict(np.asarray([combined_vector]))[0]
+
+    smiling_women = np.vstack((smiling_women, [avg_smiling_women]))
+    neutral_women = np.vstack((neutral_women, [avg_neutral_women]))
+    neutral_men = np.vstack((neutral_men, [avg_neutral_men]))
+    output_row = np.vstack((np.full((3, 80, 80, 3), 255), [prediction]))
+    output = np.vstack((smiling_women, neutral_women, neutral_men, output_row))
+
+    save_plot(
+        output,
+        0,
+        n=4,
+        filename=f"./{MODEL_NAME}/results/{MODEL_NAME}_vector_arithmetic.png",
+        show=True,
+    )
 
 
 def test_model(epoch):
     plt.clf()
-    dataset = load_real_samples()
+    dataset = load_real_samples("validation_img_align_celeba.npz")
     print(f"Avg blur dataset = {get_average_blur(dataset)}")
     save_plot(dataset, 0, n=3, filename=f"./{MODEL_NAME}/results/dataset_orig.png")
     mname = f"./{MODEL_NAME}/models/generator_model_{MODEL_NAME}_{epoch}.h5"
+    fatal_check_is_file(mname)
     print(f"Loaded model: {mname}")
     generator_model = load_model(mname)
     y = generator_model(dataset)
@@ -33,7 +76,7 @@ def test_model(epoch):
 def plot_losses():
     plt.clf()
     df = pd.read_csv(f"./{MODEL_NAME}/data/alpha_beta_loss_{MODEL_NAME}.csv")
-    df2 = df[:1000]
+    df2 = df[:BATCHES_TO_PLOT]
     plt.title("Generator loss")
     plt.xlabel("Epoch")
     plt.ylabel("loss")
@@ -48,7 +91,7 @@ def plot_losses():
 
     plt.clf()
     df = pd.read_csv(f"./{MODEL_NAME}/data/general_metrics_{MODEL_NAME}.csv")
-    df = df[:1000]
+    df = df[:BATCHES_TO_PLOT]
     plt.title("Discriminator loss")
     plt.xlabel("Epoch")
     plt.ylabel("loss")
@@ -62,7 +105,7 @@ def plot_losses():
 def plot_discriminator_accuracy():
     plt.clf()
     df = pd.read_csv(f"./{MODEL_NAME}/data/accuracy_metrics_{MODEL_NAME}.csv")
-    df = df[:1000]
+    df = df[:BATCHES_TO_PLOT]
     plt.title("Discriminator Accuracy")
     plt.xlabel("Epoch")
     plt.ylabel("Accuracy (%)")
@@ -77,6 +120,7 @@ def main():
     test_model(100)
     plot_losses()
     plot_discriminator_accuracy()
+    vector_arithmetic(100)
 
 
 if __name__ == "__main__":

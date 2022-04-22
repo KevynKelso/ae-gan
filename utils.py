@@ -1,11 +1,14 @@
 import os
 import platform
-from os.path import isdir
+import sys
+from os.path import isdir, isfile
 
 import cv2
 import matplotlib as mpl
 import numpy as np
 from PIL import Image
+
+from architecture import decoder, encoder
 
 if platform.system() != "Darwin":
     mpl.use("Agg")  # Disable the need for X window environment
@@ -35,11 +38,11 @@ def add_dirs():
 
 def add_csv_headers():
     with open(f"./{MODEL_NAME}/data/alpha_beta_loss_{MODEL_NAME}.csv", "w") as f:
-        f.write("ae_loss,gan_loss")
+        f.write("ae_loss,gan_loss\n")
     with open(f"./{MODEL_NAME}/data/general_metrics_{MODEL_NAME}.csv", "w") as f:
-        f.write("epoch,batch,d_loss_real,d_loss_fake,g_loss")
+        f.write("epoch,batch,d_loss_real,d_loss_fake,g_loss\n")
     with open(f"./{MODEL_NAME}/data/accuracy_metrics_{MODEL_NAME}.csv", "w") as f:
-        f.write("acc_real,acc_fake")
+        f.write("acc_real,acc_fake\n")
 
 
 def save_plot(examples, epoch, n=10, filename="", show=False):
@@ -90,3 +93,27 @@ def load_real_samples(filename="img_align_celeba.npz"):
     # scale from [0,255] to [-1,1]
     X = (X - 127.5) / 127.5
     return X
+
+
+def fatal_check_is_file(fname):
+    if not isfile(fname):
+        print(f"NOT FILE: {fname}")
+        sys.exit(1)
+    return True
+
+
+# NOTE: Changing the model architecture, might have to change this function.
+# Encoder and decoder models will def need to be changed.
+def split_ae_generator_v2(generator_model):
+    m_encoder = encoder()
+    m_decoder = decoder()
+    i = 0
+    # generator_model.summary()
+    for i in range(len(m_encoder.layers)):
+        m_encoder.layers[i].set_weights(generator_model.layers[i].get_weights())
+    k = 0
+    for j in range(i + 1, i + 1 + len(m_decoder.layers)):
+        m_decoder.layers[k].set_weights(generator_model.layers[j].get_weights())
+        k += 1
+
+    return m_encoder, m_decoder

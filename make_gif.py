@@ -12,7 +12,7 @@ import utils
 
 # from vae_gan import save_plot
 
-MODEL_NAME = "aegan_inverse1"
+MODEL_NAME = "aegan_inverse5"
 
 
 def check_dir():
@@ -41,17 +41,19 @@ def main():
     files.sort(key=lambda f: int(re.sub("\D", "", f)))
 
     # for adding the epoch numbers to the images
-    # for i, f in enumerate(tqdm(files)):
-    # img = Image.open(f)
-    # i1 = ImageDraw.Draw(img)
-    # i1.text((10, 10), f"EPOCH {i+1}", fill=(0, 0, 0))
-    # img.save(f)
+    for i, f in enumerate(tqdm(files)):
+        img = Image.open(f)
+        i1 = ImageDraw.Draw(img)
+        i1.text((10, 10), f"EPOCH {i+1}", fill=(0, 0, 0))
+        img.save(f)
 
     images = []
     for i, f in enumerate(tqdm(files)):
         if i % 5 == 0:
             images.append(imageio.imread(f))
-    imageio.mimsave(f"./{MODEL_NAME}/results/training.gif", images, duration=0.5)
+    imageio.mimsave(
+        f"./{MODEL_NAME}/results/{MODEL_NAME}_training.gif", images, duration=0.5
+    )
 
 
 if __name__ == "__main__":
